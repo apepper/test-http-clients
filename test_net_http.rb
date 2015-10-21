@@ -5,11 +5,15 @@ class TestNetHttp < BaseTest
     require "net/http"
     @req = Net::HTTP::Get.new(URL_PATH)
     @req.add_field("X-Test", "test")
+    @conn = Net::HTTP.new(URL_HOST, URL_PORT)
+    if URL.scheme == 'https'
+      @conn.use_ssl = true
+      @conn.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    end
+    @conn.start
   end
   def bench
-    resp = Net::HTTP.new(URL_HOST, URL_PORT).start do |http|
-      http.request(@req)
-    end
+    resp = @conn.request(@req)
     verify_response(resp.body)
   end
 end
